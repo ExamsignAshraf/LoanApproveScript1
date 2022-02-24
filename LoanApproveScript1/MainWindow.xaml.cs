@@ -33,28 +33,26 @@ namespace LoanApproveScript1
             ObservableCollection<RecommendView> LoanDetailsList = LoanRepository.GetRecommendList(14, true);
             List<string> AlreadyApproveData = GetLoanIDAlready();
 
-            int Count = 0;
-            foreach(RecommendView r in LoanDetailsList)
-            {
-                if(AlreadyApproveData.Contains(r.CustomerID)==false)
-                {
-                    LoanRepository.ApproveLoan(r);
-
-                    //return;
-                    Count++;
-                    if (Count == 100)
-                    {
-                        Console.Beep(3000, 1000);
-                        MessageBox.Show("Hello");
-                        return;
-                    }
-
-
-                }
-            }
+            ObservableCollection<RecommendView> FinalData = FilteredData(LoanDetailsList, AlreadyApproveData);
+            LoanRepository.ApproveLoans(FinalData);
             Console.Beep(3000, 1000);
             MessageBox.Show("Finished");
 
+        }
+
+
+
+        public static ObservableCollection<RecommendView> FilteredData(ObservableCollection<RecommendView> RecommendData,List<string> AlreadyApproveList)
+        {
+            ObservableCollection<RecommendView> ResultData = new ObservableCollection<RecommendView>();
+            foreach (RecommendView r in RecommendData)
+            {
+                if (AlreadyApproveList.Contains(r.CustomerID) == false)
+                {
+                    ResultData.Add(r);
+                }
+            }
+            return ResultData;
         }
 
        

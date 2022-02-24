@@ -144,9 +144,6 @@ namespace LoanApproveScript1
         }
         public static void ApproveLoans(ObservableCollection<RecommendView> recommends)
         {
-            // GetRequestDetails(ID);
-            // ChangeLoanStatus(ID, 12);
-
             using (SqlConnection sqlconn = new SqlConnection(LoanApproveScript1.Properties.Settings.Default.DBConnection))
             {
                 sqlconn.Open();
@@ -159,11 +156,11 @@ namespace LoanApproveScript1
                     {
                         if (rm.IsRecommend == true)
                         {
-
                             string LoanId = GenerateLoanID(rm.BranchID);
                             sqlcomm.CommandText = "insert into LoanDetails(LoanID,CustomerID,LoanType,LoanPeriod,InterestRate,RequestedBY,ApprovedBy,ApproveDate,LoanAmount,IsActive)values('" + LoanId + "','" + rm.CustomerID + "','" + rm.LoanType + "'," + rm.LoanPeriod + ",'12','" + rm.EmpId + "','','" + rm.SamuApproveDate.ToString("MM-dd-yyyy") + "'," + rm.LoanAmount + ",'true')";
                             sqlcomm.ExecuteNonQuery();
-                            sqlcomm.CommandText = "select EmpId from EmployeeBranch where BranchId=(select BranchId from SelfHelpGroup where SHGId=(select SHGid from PeerGroup where GroupId=(select PeerGroupId from CustomerGroup where CustId='" + rm.CustomerID + "'))) and Designation='Manager'";
+                            //sqlcomm.CommandText = "select EmpId from EmployeeBranch where BranchId=(select BranchId from SelfHelpGroup where SHGId=(select SHGid from PeerGroup where GroupId=(select PeerGroupId from CustomerGroup where CustId='" + rm.CustomerID + "'))) and Designation='Manager'";
+                            sqlcomm.CommandText = "select EmpId from EmployeeBranch where BranchId='" + rm.BranchID + "' and Designation='Manager'";
                             string EmpId = (string)sqlcomm.ExecuteScalar();
                             sqlcomm.CommandText = "update LoanDetails set ApprovedBY='" + EmpId + "' where LoanID='" + LoanId + "'";
                             sqlcomm.ExecuteNonQuery();
@@ -175,10 +172,8 @@ namespace LoanApproveScript1
                             sqlcomm.ExecuteNonQuery();
                             if (Result == 1)
                             {
-                                LoadData1(LoanId, rm.CustomerID, rm.LoanAmount, rm.LoanPeriod, rm.BranchID, rm.CollectionDay, rm.SamuApproveDate);
+                                LoadData1New(LoanId, rm.CustomerID, rm.LoanAmount, rm.LoanPeriod, rm.BranchID, rm.CollectionDay, rm.SamuApproveDate);
                                 NewSavingAcc(rm.CustomerID, rm.BranchID);
-
-                                //Suma.InsertData(SUMAObj, LoanId);
 
                             }
                         }
