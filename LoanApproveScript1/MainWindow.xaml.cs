@@ -40,8 +40,6 @@ namespace LoanApproveScript1
 
         }
 
-
-
         public static ObservableCollection<RecommendView> FilteredData(ObservableCollection<RecommendView> RecommendData,List<string> AlreadyApproveList)
         {
             ObservableCollection<RecommendView> ResultData = new ObservableCollection<RecommendView>();

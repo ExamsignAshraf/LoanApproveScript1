@@ -144,7 +144,7 @@ namespace LoanApproveScript1
         }
         public static void ApproveLoans(ObservableCollection<RecommendView> recommends)
         {
-            using (SqlConnection sqlconn = new SqlConnection(LoanApproveScript1.Properties.Settings.Default.DBConnection))
+            using (SqlConnection sqlconn = new SqlConnection(Properties.Settings.Default.DBConnection))
             {
                 sqlconn.Open();
                 if (sqlconn.State == ConnectionState.Open)
@@ -172,7 +172,7 @@ namespace LoanApproveScript1
                             sqlcomm.ExecuteNonQuery();
                             if (Result == 1)
                             {
-                                LoadData1New(LoanId, rm.CustomerID, rm.LoanAmount, rm.LoanPeriod, rm.BranchID, rm.CollectionDay, rm.SamuApproveDate);
+                                LoadData1New(LoanId, rm.CustomerID, rm.LoanAmount, rm.LoanPeriod, rm.BranchID, rm.CollectionDay, rm.SamuApproveDate, sqlconn);
                                 NewSavingAcc(rm.CustomerID, rm.BranchID);
 
                             }
@@ -220,7 +220,7 @@ namespace LoanApproveScript1
                             sqlcomm.ExecuteNonQuery();
                             if (Result == 1)
                             {
-                                LoadData1New(LoanId, rm.CustomerID, rm.LoanAmount, rm.LoanPeriod, rm.BranchID, rm.CollectionDay, rm.SamuApproveDate);
+                                LoadData1New(LoanId, rm.CustomerID, rm.LoanAmount, rm.LoanPeriod, rm.BranchID, rm.CollectionDay, rm.SamuApproveDate,sqlconn);
                                 NewSavingAcc(rm.CustomerID, rm.BranchID);
                             }
                         }
@@ -293,7 +293,7 @@ namespace LoanApproveScript1
 
         //LoadData New Method
 
-        static void LoadData1New(string LoanID, string CustomerID, int LoanAmount, int LoanPeroid, string BranchID, string Collectionday, DateTime SamuapprovalDate)
+        static void LoadData1New1(string LoanID, string CustomerID, int LoanAmount, int LoanPeroid, string BranchID, string Collectionday, DateTime SamuapprovalDate)
         {
             // GetLoanDetails(CustId);
             DateTime ApproveDate = SamuapprovalDate;
@@ -315,6 +315,27 @@ namespace LoanApproveScript1
                 sqlconn.Close();
             }
             
+        }
+        static void LoadData1New(string LoanID, string CustomerID, int LoanAmount, int LoanPeroid, string BranchID, string Collectionday, DateTime SamuapprovalDate, SqlConnection _sqlConnection)
+        {
+            DateTime ApproveDate = SamuapprovalDate;
+            DayOfWeek CollectionDay = WeekDay(Collectionday);
+            DateTime NextCollectionDate = CollectionDate(CollectionDay, ApproveDate);
+            List<Loan> LoanCollectionList = Interestcc(LoanAmount, LoanPeroid, ApproveDate, NextCollectionDate);
+            SqlConnection sqlconn = _sqlConnection;
+            //sqlconn.Open();
+            if (ConnectionState.Open == sqlconn.State)
+            {
+                DataTable dat = ConvertListtoDataTable(LoanCollectionList, BranchID, CustomerID, LoanID);
+                SqlBulkCopy bulkCopy = new SqlBulkCopy(Properties.Settings.Default.DBConnection);
+                bulkCopy.DestinationTableName = "LoanCollectionMaster";
+                bulkCopy.BatchSize = dat.Rows.Count;
+                bulkCopy.WriteToServer(dat);
+                bulkCopy.Close();
+            }
+
+
+
         }
 
         public static List<Loan> Interestcc(int amount, int weeksCount, DateTime loanIssuedDate, DateTime nextDueDate)
